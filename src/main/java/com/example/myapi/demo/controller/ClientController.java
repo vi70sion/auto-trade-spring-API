@@ -1,5 +1,6 @@
 package com.example.myapi.demo.controller;
 
+import com.example.myapi.demo.JwtGenerator;
 import com.example.myapi.demo.model.Client;
 import com.example.myapi.demo.service.ClientService;
 import org.springframework.context.annotation.Bean;
@@ -46,7 +47,14 @@ public class ClientController {
                 new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
-
+    @CrossOrigin
+    @PostMapping("/ad/client/login")
+    public ResponseEntity <String> checkUser(@RequestBody Client client) throws SQLException {
+        int userId = clientService.checkUser(client);
+        return (userId == -1) ?
+                new ResponseEntity<>("null", HttpStatus.BAD_REQUEST) :
+                new ResponseEntity<>(JwtGenerator.generateJwt(client.getEmail(), client.getPassword(), userId), HttpStatus.OK);
+    }
 
 
 

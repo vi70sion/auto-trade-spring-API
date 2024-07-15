@@ -1,10 +1,8 @@
 package com.example.myapi.demo.repository;
 
 import com.example.myapi.demo.model.Client;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.util.List;
 import static com.example.myapi.demo.Constants.*;
 
@@ -23,6 +21,15 @@ public class ClientRepository {
         statement.setString(2, client.getEmail());
         statement.setString(3, client.getPassword());
         return (statement.executeUpdate() > 0) ? client : null;
+    }
+
+    public int checkUser(Client client) throws SQLException {
+        String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+        PreparedStatement statement = _connection.prepareStatement(sql);
+        statement.setString(1, client.getEmail());
+        statement.setString(2, client.getPassword());
+        ResultSet resultSet = statement.executeQuery();
+        return (resultSet.next()) ? resultSet.getInt("client_id"): -1;
     }
 
 }

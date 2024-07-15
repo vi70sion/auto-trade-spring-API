@@ -14,6 +14,8 @@ public class ClientService {
         return clientRepository.addClient(client);
     }
 
-
+    public int checkUser(Client client) throws SQLException {
+        return clientRepository.checkUser(client);
+    }
 
 }
