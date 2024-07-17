@@ -36,6 +36,19 @@ public class AdRepository {
         return adsStringList;
     }
 
+    public List<String> allModelsByMakeList(String make) throws SQLException {
+        adsStringList = new ArrayList<>();
+        String sql = "SELECT model AS model FROM car_ads WHERE make = ? ORDER BY model ASC";
+        PreparedStatement statement = _connection.prepareStatement(sql);
+        statement.setString(1, make);
+        ResultSet resultSet = statement.executeQuery();
+        while (resultSet.next()) {
+            adsStringList.add(resultSet.getString("model"));
+        }
+        return adsStringList;
+    }
+
+
     public List<CarAd> allAdsList(String make, String model) throws SQLException {
 
         adsList = new ArrayList<>();

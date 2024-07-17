@@ -52,10 +52,17 @@ public class AdController {
     @GetMapping("/ad/makes")
     public ResponseEntity<List<String>> allMakeList() throws SQLException {
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.OK)
                 .body(adService.allMakeList());
     }
 
+    @CrossOrigin
+    @GetMapping("/ad/models/{make}")
+    public ResponseEntity<List<String>> allModelsByMakeList(@PathVariable String make) throws SQLException {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(adService.allModelsByMakeList(make));
+    }
 
 
     public byte[] readJpgFromFile(){
