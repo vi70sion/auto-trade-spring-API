@@ -67,7 +67,7 @@ public class AdController {
 
     @CrossOrigin
     @GetMapping("/ad/{make}/{model}/{price_from}/{price_to}")
-    public ResponseEntity<List<String>> AdsByMakeModelPriceList(@PathVariable String make, @PathVariable String model,
+    public ResponseEntity<List<CarAd>> AdsByMakeModelPriceList(@PathVariable String make, @PathVariable String model,
                                                    @PathVariable BigDecimal price_from, @PathVariable BigDecimal price_to) throws SQLException {
         return ResponseEntity
                 .status(HttpStatus.OK)

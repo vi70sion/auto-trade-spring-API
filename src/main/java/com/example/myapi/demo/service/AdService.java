@@ -25,7 +25,7 @@ public class AdService {
         return adRepository.allModelsByMakeList(make);
     }
 
-    public List<String> adsByMakeModelPriceList(String make, String model, BigDecimal price_from, BigDecimal price_to) {
+    public List<CarAd> adsByMakeModelPriceList(String make, String model, BigDecimal price_from, BigDecimal price_to) throws SQLException {
         return adRepository.adsByMakeModelPriceList(make, model, price_from, price_to);
     }
 
