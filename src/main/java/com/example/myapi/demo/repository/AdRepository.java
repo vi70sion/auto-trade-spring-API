@@ -38,7 +38,7 @@ public class AdRepository {
 
     public List<String> allModelsByMakeList(String make) throws SQLException {
         adsStringList = new ArrayList<>();
-        String sql = "SELECT model AS model FROM car_ads WHERE make = ? ORDER BY model ASC";
+        String sql = "SELECT DISTINCT model AS model FROM car_ads WHERE make = ? ORDER BY model ASC";
         PreparedStatement statement = _connection.prepareStatement(sql);
         statement.setString(1, make);
         ResultSet resultSet = statement.executeQuery();
@@ -47,6 +47,35 @@ public class AdRepository {
         }
         return adsStringList;
     }
+
+    public List<CarAd> adsByMakeModelPriceList(String make, String model, BigDecimal price_from, BigDecimal price_to) throws SQLException {
+        adsList = new ArrayList<>();
+        String sql = "SELECT * FROM car_ads WHERE make = ? AND model = ? AND price BETWEEN ? AND ? ORDER BY price ASC;";
+        PreparedStatement statement = _connection.prepareStatement(sql);
+        statement.setString(1, make);
+        statement.setString(2, model);
+        statement.setBigDecimal(3, price_from);
+        statement.setBigDecimal(4, price_to);
+        ResultSet resultSet = statement.executeQuery();
+        while (resultSet.next()) {
+            int adId = resultSet.getInt("ad_id");
+            int clientId = resultSet.getInt("client_id");
+            String adName = resultSet.getString("name");
+            String adMake = resultSet.getString("make");
+            String adModel = resultSet.getString("model");
+            int adYear = resultSet.getInt("year");
+            BigDecimal adPrice = resultSet.getBigDecimal("price");
+            int adMileage = resultSet.getInt("mileage");
+            String adDescr = resultSet.getString("discription");
+            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr));
+        }
+        return adsList;
+
+
+    }
+
+
+
 
 
     public List<CarAd> allAdsList(String make, String model) throws SQLException {

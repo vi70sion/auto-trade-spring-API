@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -63,6 +64,17 @@ public class AdController {
                 .status(HttpStatus.OK)
                 .body(adService.allModelsByMakeList(make));
     }
+
+    @CrossOrigin
+    @GetMapping("/ad/{make}/{model}/{price_from}/{price_to}")
+    public ResponseEntity<List<String>> AdsByMakeModelPriceList(@PathVariable String make, @PathVariable String model,
+                                                   @PathVariable BigDecimal price_from, @PathVariable BigDecimal price_to) throws SQLException {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(adService.adsByMakeModelPriceList(make, model, price_from, price_to));
+    }
+
+
 
 
     public byte[] readJpgFromFile(){
