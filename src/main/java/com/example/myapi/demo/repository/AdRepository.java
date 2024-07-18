@@ -17,9 +17,9 @@ import static com.example.myapi.demo.Constants.*;
 public class AdRepository {
     private List<CarAd> adsList;
     private List<String> adsStringList;
-    private Connection _connection;
+    private static Connection _connection;
     public AdRepository() throws SQLException {
-        _connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        //_connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
 
     public CarAd addAd(CarAd carAd) {
@@ -58,6 +58,7 @@ public class AdRepository {
     }
 
     public List<String> allModelsByMakeList(String make) throws SQLException {
+        sqlConnection();
         adsStringList = new ArrayList<>();
         String sql = "SELECT DISTINCT model AS model FROM car_ads WHERE make = ? ORDER BY model ASC";
         PreparedStatement statement = _connection.prepareStatement(sql);
@@ -70,6 +71,7 @@ public class AdRepository {
     }
 
     public List<CarAd> adsByMakeModelPriceList(String make, String model, BigDecimal price_from, BigDecimal price_to) throws SQLException {
+        sqlConnection();
         adsList = new ArrayList<>();
         String sql = "SELECT * FROM car_ads WHERE make = ? AND model = ? AND price BETWEEN ? AND ? ORDER BY price ASC;";
         PreparedStatement statement = _connection.prepareStatement(sql);
@@ -100,7 +102,7 @@ public class AdRepository {
 
 
     public List<CarAd> allAdsList(String make, String model) throws SQLException {
-
+        sqlConnection();
         adsList = new ArrayList<>();
         String sql = "SELECT * FROM car_ads ORDER BY make";
         PreparedStatement statement = _connection.prepareStatement(sql);
@@ -146,7 +148,7 @@ public class AdRepository {
     }
 
     public static void sqlConnection() throws SQLException {
-        //_connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        _connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
 
 
