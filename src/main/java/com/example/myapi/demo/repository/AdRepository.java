@@ -2,6 +2,11 @@ package com.example.myapi.demo.repository;
 
 import com.example.myapi.demo.model.CarAd;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
@@ -24,16 +29,32 @@ public class AdRepository {
     }
 
 
-    public List<String> allMakeList() throws SQLException {
-        adsStringList = new ArrayList<>();
-        String sql = "SELECT DISTINCT make AS make FROM car_ads ORDER BY make ASC";
-        PreparedStatement statement = _connection.prepareStatement(sql);
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) {
-            String adMake = resultSet.getString("make");
-            adsStringList.add(resultSet.getString("make"));
+    public List<String> allMakeList(){
+        try {
+            sqlConnection();
+            adsStringList = new ArrayList<>();
+            String sql = "SELECT DISTINCT make AS make FROM car_ads ORDER BY make ASC";
+            PreparedStatement statement = _connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                String adMake = resultSet.getString("make");
+                adsStringList.add(resultSet.getString("make"));
+            }
+            return adsStringList;
+        } catch (SQLException e) {
+            // SQL išimtis
+            return null;
+        } finally {
+            if (_connection != null) {
+                try {
+                    _connection.close();
+                } catch (SQLException e) {
+                    //
+                }
+            }
         }
-        return adsStringList;
+
+
     }
 
     public List<String> allModelsByMakeList(String make) throws SQLException {
@@ -67,7 +88,7 @@ public class AdRepository {
             BigDecimal adPrice = resultSet.getBigDecimal("price");
             int adMileage = resultSet.getInt("mileage");
             String adDescr = resultSet.getString("discription");
-            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr));
+            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, readJpgFromFile()));
         }
         return adsList;
 
@@ -94,11 +115,38 @@ public class AdRepository {
             BigDecimal adPrice = resultSet.getBigDecimal("price");
             int adMileage = resultSet.getInt("mileage");
             String adDescr = resultSet.getString("discription");
-            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr));
+            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, readJpgFromFile()));
         }
         return adsList;
 
 
+    }
+
+    public byte[] readJpgFromFile(){
+        String imagePath = "C:/JavaTest/API/auto-trade/toyota-corolla.jpg";
+
+        try {
+            // Step 1: Read the image from the file
+            BufferedImage bufferedImage = ImageIO.read(new File(imagePath));
+            // Step 2: Convert the image to a byte array
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(bufferedImage, "jpg", baos);
+            baos.flush();
+            byte[] imageInBytes = baos.toByteArray();
+            baos.close();
+            // Now imageInBytes contains the JPG image as a byte array
+            System.out.println("Image successfully converted to byte array!");
+            // (Optional) If you want to verify, you can print the byte array length
+            System.out.println("Byte array length: " + imageInBytes.length);
+            return imageInBytes;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void sqlConnection() throws SQLException {
+        //_connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
 
 

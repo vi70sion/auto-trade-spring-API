@@ -34,7 +34,7 @@ public class AdController {
     public ResponseEntity<CarAd> addAd(@RequestParam CarAd carAd, @RequestParam("image") MultipartFile image) {
         try {
             //CarAd carAd = new CarAd();
-            byte[] adPhoto = image.getBytes();   // Convert the image to a byte array
+            byte[] adPhoto = image.getBytes();   // convert the image to a byte array
             //carAd.setPhoto(adPhoto);
             //adService.addAd(carAd);
             return ResponseEntity
@@ -74,30 +74,16 @@ public class AdController {
                 .body(adService.adsByMakeModelPriceList(make, model, price_from, price_to));
     }
 
+//    @CrossOrigin
+//    @GetMapping("/ad/models/{make}")
+//    public ResponseEntity<List<String>> deleteAdById(@PathVariable int id) throws SQLException {
+//        return ResponseEntity
+//                .status(HttpStatus.OK)
+//                .body(adService.deleteAdById(id));
+//    }
 
 
 
-    public byte[] readJpgFromFile(){
-        String imagePath = "C:/JavaTest/API/auto-trade/toyota-corolla.jpg";
 
-        try {
-            // Step 1: Read the image from the file
-            BufferedImage bufferedImage = ImageIO.read(new File(imagePath));
-            // Step 2: Convert the image to a byte array
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(bufferedImage, "jpg", baos);
-            baos.flush();
-            byte[] imageInBytes = baos.toByteArray();
-            baos.close();
-            // Now imageInBytes contains the JPG image as a byte array
-            System.out.println("Image successfully converted to byte array!");
-            // (Optional) If you want to verify, you can print the byte array length
-            System.out.println("Byte array length: " + imageInBytes.length);
-            return imageInBytes;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
 }

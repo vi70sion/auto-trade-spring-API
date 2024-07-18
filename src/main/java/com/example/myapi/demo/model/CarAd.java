@@ -13,7 +13,7 @@ public class CarAd {
     }
 
     //public CarAd(int adId, int clientId, String name, String make, String model, int year, BigDecimal price, int mileage, String description, byte[] photo) {
-    public CarAd(int adId, int clientId, String name, String make, String model, int year, BigDecimal price, int mileage, String description) {
+    public CarAd(int adId, int clientId, String name, String make, String model, int year, BigDecimal price, int mileage, String description, byte[] photo) {
         this.adId = adId;
         this.clientId = clientId;
         this.name = name;
@@ -23,7 +23,7 @@ public class CarAd {
         this.price = price;
         this.mileage = mileage;
         this.description = description;
-        //this.photo = photo;
+        this.photo = photo;
     }
 
     public int getAdId() { return adId; }

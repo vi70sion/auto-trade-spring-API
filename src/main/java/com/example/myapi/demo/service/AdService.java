@@ -2,8 +2,6 @@ package com.example.myapi.demo.service;
 
 import com.example.myapi.demo.model.CarAd;
 import com.example.myapi.demo.repository.AdRepository;
-import org.springframework.web.bind.annotation.PathVariable;
-
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
@@ -18,6 +16,7 @@ public class AdService {
     }
 
     public List<String> allMakeList() throws SQLException {
+        adRepository = new AdRepository();
         return adRepository.allMakeList();
     }
 
