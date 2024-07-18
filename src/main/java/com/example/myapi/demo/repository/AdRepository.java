@@ -73,12 +73,25 @@ public class AdRepository {
     public List<CarAd> adsByMakeModelPriceList(String make, String model, BigDecimal price_from, BigDecimal price_to) throws SQLException {
         sqlConnection();
         adsList = new ArrayList<>();
-        String sql = "SELECT * FROM car_ads WHERE make = ? AND model = ? AND price BETWEEN ? AND ? ORDER BY price ASC;";
+        String sql;
+        if(make.equalsIgnoreCase("empty")) {
+            make = null;
+        }
+        if(model.equalsIgnoreCase("empty")) {
+            model = null;
+        }
+        sql = "SELECT * FROM car_ads " +
+                "WHERE (make = ? OR ? IS NULL) " +
+                "AND (model = ? OR ? IS NULL) " +
+                "AND price BETWEEN ? AND ? " +
+                "ORDER BY price ASC;";
         PreparedStatement statement = _connection.prepareStatement(sql);
         statement.setString(1, make);
-        statement.setString(2, model);
-        statement.setBigDecimal(3, price_from);
-        statement.setBigDecimal(4, price_to);
+        statement.setString(2, make);
+        statement.setString(3, model);
+        statement.setString(4, model);
+        statement.setBigDecimal(5, price_from);
+        statement.setBigDecimal(6, price_to);
         ResultSet resultSet = statement.executeQuery();
         while (resultSet.next()) {
             int adId = resultSet.getInt("ad_id");

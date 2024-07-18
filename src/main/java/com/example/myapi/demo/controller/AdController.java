@@ -69,6 +69,7 @@ public class AdController {
     @GetMapping("/ad/{make}/{model}/{price_from}/{price_to}")
     public ResponseEntity<List<CarAd>> AdsByMakeModelPriceList(@PathVariable String make, @PathVariable String model,
                                                    @PathVariable BigDecimal price_from, @PathVariable BigDecimal price_to) throws SQLException {
+        System.out.println();
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(adService.adsByMakeModelPriceList(make, model, price_from, price_to));
