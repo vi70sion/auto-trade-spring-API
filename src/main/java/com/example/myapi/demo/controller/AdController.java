@@ -3,6 +3,7 @@ package com.example.myapi.demo.controller;
 
 import com.example.myapi.demo.model.CarAd;
 import com.example.myapi.demo.service.AdService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -31,23 +32,24 @@ public class AdController {
 
     @CrossOrigin
     @PostMapping("/ad/add")
-    public ResponseEntity<CarAd> addAd(@RequestParam CarAd carAd, @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<String> addAd( @RequestPart("car") String carJson, @RequestParam("image") MultipartFile image) {
         try {
-            //CarAd carAd = new CarAd();
+            ObjectMapper objectMapper = new ObjectMapper();
+            CarAd carAd = objectMapper.readValue(carJson, CarAd.class);
             byte[] adPhoto = image.getBytes();   // convert the image to a byte array
-            //carAd.setPhoto(adPhoto);
-            //adService.addAd(carAd);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(carAd);
+            carAd.setPhoto(adPhoto);
+            if (adService.addAd(carAd).equals("success"))
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body("success");
         } catch (IOException e) {
             // if error;
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(null);
         }
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("failed");
     }
+
 
     @CrossOrigin
     @GetMapping("/ad/makes")
@@ -82,9 +84,6 @@ public class AdController {
 //                .status(HttpStatus.OK)
 //                .body(adService.deleteAdById(id));
 //    }
-
-
-
 
 
 }

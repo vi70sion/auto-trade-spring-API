@@ -1,7 +1,6 @@
 package com.example.myapi.demo.repository;
 
 import com.example.myapi.demo.model.CarAd;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -22,10 +21,37 @@ public class AdRepository {
         //_connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
 
-    public CarAd addAd(CarAd carAd) {
-
-
-        return null;
+    public String addAd(CarAd carAd) {
+        try {
+            sqlConnection();
+            String sql = "INSERT INTO car_ads ( client_id, name, make, model, year, price, mileage, description) VALUES (?,?,?,?,?,?,?,?)";
+            PreparedStatement statement = _connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+            statement.setInt(1, carAd.getClientId());
+            statement.setString(2, carAd.getName());
+            statement.setString(3, carAd.getMake());
+            statement.setString(4, carAd.getModel());
+            statement.setInt(5, carAd.getYear());
+            statement.setBigDecimal(6, carAd.getPrice());
+            statement.setInt(7, carAd.getMileage());
+            statement.setString(8, carAd.getDescription());
+            int rowsInserted = statement.executeUpdate();
+            if (rowsInserted > 0) {
+                // įterptos eilutės ID
+                ResultSet resultSet = statement.getGeneratedKeys();
+                if (resultSet.next()) {
+                    int id = resultSet.getInt(1);
+                    sql = "INSERT INTO ad_photo ( ad_id, photo) VALUES (?,?)";
+                    statement = _connection.prepareStatement(sql);
+                    statement.setInt(1, id);
+                    statement.setBytes(2, carAd.getPhoto());
+                    rowsInserted = statement.executeUpdate();
+                    if (rowsInserted > 0) return "success";
+                }
+            }
+           return "failed";
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -102,12 +128,10 @@ public class AdRepository {
             int adYear = resultSet.getInt("year");
             BigDecimal adPrice = resultSet.getBigDecimal("price");
             int adMileage = resultSet.getInt("mileage");
-            String adDescr = resultSet.getString("discription");
-            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, readJpgFromFile()));
+            String adDescr = resultSet.getString("description");
+            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, null));
         }
         return adsList;
-
-
     }
 
 
@@ -129,8 +153,8 @@ public class AdRepository {
             int adYear = resultSet.getInt("year");
             BigDecimal adPrice = resultSet.getBigDecimal("price");
             int adMileage = resultSet.getInt("mileage");
-            String adDescr = resultSet.getString("discription");
-            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, readJpgFromFile()));
+            String adDescr = resultSet.getString("description");
+            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, null));
         }
         return adsList;
 
@@ -158,6 +182,16 @@ public class AdRepository {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public String addImage(byte[] adPhoto) throws SQLException {
+        sqlConnection();
+        String sql = "INSERT INTO ad_photo ( ad_id, photo ) VALUES (?, ?)";
+        PreparedStatement statement = _connection.prepareStatement(sql);
+        statement.setInt(1, 1);
+        statement.setBytes(2, adPhoto);
+        int rowsInserted = statement.executeUpdate();
+        return "ideta";
     }
 
     public static void sqlConnection() throws SQLException {

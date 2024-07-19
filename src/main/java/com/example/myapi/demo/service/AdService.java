@@ -11,7 +11,7 @@ public class AdService {
     public AdService() throws SQLException {
     }
 
-    public CarAd addAd(CarAd carAd) {
+    public String addAd(CarAd carAd) {
         return adRepository.addAd(carAd);
     }
 
@@ -28,4 +28,7 @@ public class AdService {
         return adRepository.adsByMakeModelPriceList(make, model, price_from, price_to);
     }
 
+    public String addImage(byte[] adPhoto) throws SQLException {
+        return adRepository.addImage(adPhoto);
+    }
 }
