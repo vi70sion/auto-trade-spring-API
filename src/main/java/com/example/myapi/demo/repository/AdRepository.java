@@ -106,7 +106,7 @@ public class AdRepository {
         if(model.equalsIgnoreCase("empty")) {
             model = null;
         }
-        sql = "SELECT * FROM car_ads " +
+        sql = "SELECT a.*, p.photo FROM car_ads a JOIN ad_photo p ON a.ad_id = p.ad_id " +
                 "WHERE (make = ? OR ? IS NULL) " +
                 "AND (model = ? OR ? IS NULL) " +
                 "AND price BETWEEN ? AND ? " +
@@ -129,7 +129,8 @@ public class AdRepository {
             BigDecimal adPrice = resultSet.getBigDecimal("price");
             int adMileage = resultSet.getInt("mileage");
             String adDescr = resultSet.getString("description");
-            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, null));
+            byte[] photo = resultSet.getBytes("photo");
+            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, photo));
         }
         return adsList;
     }
