@@ -1,7 +1,6 @@
 package com.example.myapi.demo.repository;
 
 import com.example.myapi.demo.model.Client;
-
 import java.sql.*;
 import java.util.List;
 import static com.example.myapi.demo.Constants.*;

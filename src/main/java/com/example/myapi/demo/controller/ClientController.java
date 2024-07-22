@@ -3,14 +3,9 @@ package com.example.myapi.demo.controller;
 import com.example.myapi.demo.JwtGenerator;
 import com.example.myapi.demo.model.Client;
 import com.example.myapi.demo.service.ClientService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
 import java.sql.SQLException;
 
 @RestController

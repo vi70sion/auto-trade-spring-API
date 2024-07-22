@@ -1,6 +1,9 @@
 package com.example.myapi.demo.repository;
 
+import com.example.myapi.demo.JwtDecoder;
 import com.example.myapi.demo.model.CarAd;
+import io.jsonwebtoken.JwtException;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -19,6 +22,10 @@ public class AdRepository {
     private static Connection _connection;
     public AdRepository() throws SQLException {
         //_connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+    }
+
+    public static void sqlConnection() throws SQLException {
+        _connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
 
     public String addAd(CarAd carAd) {
@@ -79,8 +86,6 @@ public class AdRepository {
                 }
             }
         }
-
-
     }
 
     public List<String> allModelsByMakeList(String make) throws SQLException {
@@ -135,6 +140,27 @@ public class AdRepository {
         return adsList;
     }
 
+    public String deleteAdByAdId(int id) {
+        try {
+            sqlConnection();
+            String deleteSql = "DELETE FROM ad_photo WHERE ad_id = ?";
+            PreparedStatement statement = _connection.prepareStatement(deleteSql);
+            statement.setInt(1, id);
+            int rowsDeleted = statement.executeUpdate();
+            if(rowsDeleted > 0){
+                deleteSql = "DELETE FROM car_ads WHERE ad_id = ?";
+                statement = _connection.prepareStatement(deleteSql);
+                statement.setInt(1, id);
+                rowsDeleted = statement.executeUpdate();
+                return (rowsDeleted > 0) ? "success" : "failed";
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return "failed";
+    }
+
+
 
 
 
@@ -158,8 +184,6 @@ public class AdRepository {
             adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, null));
         }
         return adsList;
-
-
     }
 
     public byte[] readJpgFromFile(){
@@ -195,9 +219,7 @@ public class AdRepository {
         return "ideta";
     }
 
-    public static void sqlConnection() throws SQLException {
-        _connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-    }
+
 
 
 }

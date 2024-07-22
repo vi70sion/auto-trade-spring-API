@@ -2,7 +2,6 @@ package com.example.myapi.demo.service;
 
 import com.example.myapi.demo.model.Client;
 import com.example.myapi.demo.repository.ClientRepository;
-
 import java.sql.SQLException;
 
 public class ClientService {

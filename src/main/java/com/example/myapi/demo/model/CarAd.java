@@ -37,6 +37,6 @@ public class CarAd {
     public BigDecimal getPrice() { return price; }
     public byte[] getPhoto() { return photo; }
     public void setPhoto(byte[] photo) { this.photo = photo; }
-
+    public void setClientId(int clientId) { this.clientId = clientId; }
 
 }
