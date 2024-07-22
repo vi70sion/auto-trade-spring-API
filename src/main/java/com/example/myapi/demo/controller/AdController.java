@@ -52,6 +52,18 @@ public class AdController {
                 .body("failed");
     }
 
+    @CrossOrigin
+    @GetMapping("/ad/{id}")
+    public ResponseEntity<CarAd> getAdById( @PathVariable int id) {
+        CarAd carAd = adService.getAdById(id);
+        return  (carAd != null ) ?  ResponseEntity
+                                        .status(HttpStatus.OK)
+                                        .body(carAd) :
+                                    ResponseEntity
+                                        .status(HttpStatus.BAD_REQUEST)
+                                        .body(null);
+    }
+
     //Visų gamintojų sąrašas
     @CrossOrigin
     @GetMapping("/ad/makes")

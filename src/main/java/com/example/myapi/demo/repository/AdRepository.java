@@ -61,6 +61,31 @@ public class AdRepository {
         }
     }
 
+    public CarAd getAdById(int id) {
+        try {
+            sqlConnection();
+            String sql = "SELECT a.*, p.photo FROM car_ads a JOIN ad_photo p ON a.ad_id = p.ad_id WHERE a.ad_id = ?";
+            PreparedStatement statement = _connection.prepareStatement(sql);
+            statement.setInt(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            boolean hasResults = resultSet.next();
+            if(!hasResults) return null;
+            int adId = resultSet.getInt("ad_id");
+            int clientId = resultSet.getInt("client_id");
+            String adName = resultSet.getString("name");
+            String adMake = resultSet.getString("make");
+            String adModel = resultSet.getString("model");
+            int adYear = resultSet.getInt("year");
+            BigDecimal adPrice = resultSet.getBigDecimal("price");
+            int adMileage = resultSet.getInt("mileage");
+            String adDescr = resultSet.getString("description");
+            byte[] photo = resultSet.getBytes("photo");
+            return new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, photo);
+        } catch (SQLException e) {
+            // sql klaida
+        }
+        return null;
+    }
 
     public List<String> allMakeList(){
         try {
