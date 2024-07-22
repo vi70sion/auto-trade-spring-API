@@ -27,12 +27,13 @@ public class AdController {
     @PostMapping("/ad/add")
     public ResponseEntity<String> addAd( @RequestPart("car") String carJson, @RequestParam("image") MultipartFile image,
                                          @RequestHeader("Authorization") String authorizationHeader ) {
-//        if(!adService.badRequestCheck(authorizationHeader)) return ResponseEntity
-//                                                                        .status(HttpStatus.BAD_REQUEST)
-//                                                                        .body("bad request");
-//        if(!adService.unautorizedCheck(authorizationHeader)) return ResponseEntity
-//                                                                        .status(HttpStatus.UNAUTHORIZED)
-//                                                                        .body("unauthorized");
+        if(!adService.badRequestCheck(authorizationHeader)) return ResponseEntity
+                                                                        .status(HttpStatus.BAD_REQUEST)
+                                                                        .body("bad request");
+        if(!adService.unautorizedCheck(authorizationHeader)) return ResponseEntity
+                                                                        .status(HttpStatus.UNAUTHORIZED)
+                                                                        .body("unauthorized");
+        System.out.println();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             CarAd carAd = objectMapper.readValue(carJson, CarAd.class);
