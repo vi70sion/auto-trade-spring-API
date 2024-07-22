@@ -34,6 +34,10 @@ public class AdService {
         return adRepository.getAdById(id);
     }
 
+    public List<CarAd> getAdsByClientId(int id) {
+        return adRepository.getAdsByClientId(id);
+    }
+
     public List<String> allMakeList() throws SQLException {
         adRepository = new AdRepository();
         return adRepository.allMakeList();

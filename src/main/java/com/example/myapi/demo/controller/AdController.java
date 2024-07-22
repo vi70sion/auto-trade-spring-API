@@ -33,7 +33,6 @@ public class AdController {
         if(!adService.unautorizedCheck(authorizationHeader)) return ResponseEntity
                                                                         .status(HttpStatus.UNAUTHORIZED)
                                                                         .body("unauthorized");
-        System.out.println();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             CarAd carAd = objectMapper.readValue(carJson, CarAd.class);
@@ -52,6 +51,7 @@ public class AdController {
                 .body("failed");
     }
 
+    //Skelbimas pagal skelbimo ID
     @CrossOrigin
     @GetMapping("/ad/{id}")
     public ResponseEntity<CarAd> getAdById( @PathVariable int id) {
@@ -62,6 +62,26 @@ public class AdController {
                                     ResponseEntity
                                         .status(HttpStatus.BAD_REQUEST)
                                         .body(null);
+    }
+
+
+    //Visi skelbimai pagal vartotojo ID
+    @CrossOrigin
+    @PostMapping("/ad/client/{id}")
+    public ResponseEntity<List<CarAd>> getAdsByClientId( @PathVariable int clientId, @RequestHeader("Authorization") String authorizationHeader ) {
+        if(!adService.badRequestCheck(authorizationHeader)) return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ArrayList<>());
+        if(!adService.unautorizedCheck(authorizationHeader)) return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ArrayList<>());
+        List<CarAd> adList = adService.getAdsByClientId(clientId);
+        return (!adList.isEmpty()) ? ResponseEntity
+                                        .status(HttpStatus.OK)
+                                        .body(adList) :
+                                     ResponseEntity
+                                        .status(HttpStatus.BAD_REQUEST)
+                                        .body(new ArrayList<>());
     }
 
     //Visų gamintojų sąrašas
