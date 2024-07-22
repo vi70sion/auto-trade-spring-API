@@ -65,17 +65,17 @@ public class AdController {
     }
 
 
-    //Visi skelbimai pagal vartotojo ID
+    //Visi skelbimai pagal vartotojo ID (gauname iš token)
     @CrossOrigin
-    @GetMapping("/ad/client/{id}")
-    public ResponseEntity<List<CarAd>> getAdsByClientId( @PathVariable int id, @RequestHeader("Authorization") String authorizationHeader ) {
+    @GetMapping("/ad/client")
+    public ResponseEntity<List<CarAd>> getAdsByClientId(@RequestHeader("Authorization") String authorizationHeader ) {
         if(!adService.badRequestCheck(authorizationHeader)) return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ArrayList<>());
+                                                                    .status(HttpStatus.BAD_REQUEST)
+                                                                    .body(new ArrayList<>());
         if(!adService.unautorizedCheck(authorizationHeader)) return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(new ArrayList<>());
-        List<CarAd> adList = adService.getAdsByClientId(id);
+                                                                     .status(HttpStatus.UNAUTHORIZED)
+                                                                     .body(new ArrayList<>());
+        List<CarAd> adList = adService.getAdsByClientId(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class));
         return (!adList.isEmpty()) ? ResponseEntity
                                         .status(HttpStatus.OK)
                                         .body(adList) :

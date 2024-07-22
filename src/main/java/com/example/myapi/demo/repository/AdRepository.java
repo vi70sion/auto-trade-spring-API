@@ -91,8 +91,9 @@ public class AdRepository {
         try {
             sqlConnection();
             adsList = new ArrayList<>();
-            String sql = "SELECT a.*, p.photo FROM car_ads a JOIN ad_photo p ON a.client_id = p.client_id WHERE a.client_id = ?";
+            String sql = "SELECT a.*, p.photo FROM car_ads a JOIN ad_photo p ON a.ad_id = p.ad_id WHERE a.client_id = ?";
             PreparedStatement statement = _connection.prepareStatement(sql);
+            statement.setInt(1, clId);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 int adId = resultSet.getInt("ad_id");
