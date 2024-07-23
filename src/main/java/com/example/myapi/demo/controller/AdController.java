@@ -23,6 +23,7 @@ public class AdController {
 
     //Skelbimo pridėjimas: Endpointas naujo skelbimo sukūrimui,
     // kuris priima duomenis (pavadinimas, markė, modelis, metai, kaina, rida, aprašymas, nuotrauka).
+    // ID gauname iš JWT
     @CrossOrigin
     @PostMapping("/ad/add")
     public ResponseEntity<String> addAd( @RequestPart("car") String carJson, @RequestParam("image") MultipartFile image,
@@ -38,7 +39,7 @@ public class AdController {
             CarAd carAd = objectMapper.readValue(carJson, CarAd.class);
             byte[] adPhoto = image.getBytes();   // convert the image to a byte array
             carAd.setPhoto(adPhoto);
-            carAd.setClientId(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class));
+            carAd.setClientId(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class)); // user ID from JWT
             if (adService.addAd(carAd).equals("success"))
                 return ResponseEntity
                         .status(HttpStatus.OK)
@@ -50,6 +51,36 @@ public class AdController {
                 .status(HttpStatus.BAD_REQUEST)
                 .body("failed");
     }
+
+    // Esamo skelbimo redagavimas
+    @CrossOrigin
+    @PutMapping("/ad/update")
+    public ResponseEntity<String> updateAd( @RequestPart("car") String carJson, @RequestParam("image") MultipartFile image,
+                                         @RequestHeader("Authorization") String authorizationHeader ) {
+        if(!adService.badRequestCheck(authorizationHeader)) return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("bad request");
+        if(!adService.unautorizedCheck(authorizationHeader)) return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body("unauthorized");
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            CarAd carAd = objectMapper.readValue(carJson, CarAd.class);
+            byte[] adPhoto = image.getBytes();   // convert the image to a byte array
+            carAd.setPhoto(adPhoto);
+            carAd.setClientId(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class)); // user ID from JWT
+            if (adService.updateAd(carAd).equals("success"))
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body("success");
+        } catch (IOException e) {
+            // if error;
+        }
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("failed");
+    }
+
 
     //Skelbimas pagal skelbimo ID
     @CrossOrigin
@@ -64,24 +95,22 @@ public class AdController {
                                         .body(null);
     }
 
-
-    //Visi skelbimai pagal vartotojo ID (gauname iš token)
+    //Visi skelbimai pagal vartotojo ID (gauname iš JWT)
     @CrossOrigin
-    @GetMapping("/ad/client")
+    @GetMapping("/ad/client")   // reikėtų pasitaisyti į /ad/client/ads
     public ResponseEntity<List<CarAd>> getAdsByClientId(@RequestHeader("Authorization") String authorizationHeader ) {
-        if(!adService.badRequestCheck(authorizationHeader)) return ResponseEntity
-                                                                    .status(HttpStatus.BAD_REQUEST)
-                                                                    .body(new ArrayList<>());
-        if(!adService.unautorizedCheck(authorizationHeader)) return ResponseEntity
-                                                                     .status(HttpStatus.UNAUTHORIZED)
-                                                                     .body(new ArrayList<>());
-        List<CarAd> adList = adService.getAdsByClientId(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class));
-        return (!adList.isEmpty()) ? ResponseEntity
-                                        .status(HttpStatus.OK)
-                                        .body(adList) :
-                                     ResponseEntity
-                                        .status(HttpStatus.BAD_REQUEST)
-                                        .body(new ArrayList<>());
+        if(!adService.badRequestCheck(authorizationHeader))
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ArrayList<>());
+        if(!adService.unautorizedCheck(authorizationHeader))
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new ArrayList<>());
+        return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(adService.getAdsByClientId(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class)));
+
     }
 
     //Visų gamintojų sąrašas

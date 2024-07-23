@@ -26,6 +26,10 @@ public class AdService {
         return (authorizationHeader.length() < 20 || authorizationHeader == null || authorizationHeader.isEmpty()) ? false : true;
     }
 
+    public String updateAd(CarAd carAd) {
+        return adRepository.updateAd(carAd);
+    }
+
     public String addAd(CarAd carAd) {
         return adRepository.addAd(carAd);
     }

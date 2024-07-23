@@ -1,9 +1,6 @@
 package com.example.myapi.demo.repository;
 
-import com.example.myapi.demo.JwtDecoder;
 import com.example.myapi.demo.model.CarAd;
-import io.jsonwebtoken.JwtException;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -59,6 +56,34 @@ public class AdRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String updateAd(CarAd carAd) {
+        try {
+            sqlConnection();
+            String sql = "UPDATE car_ads SET client_id = ?, name = ?, make = ?, model = ?, year = ?, price = ?, mileage = ?, description = ? " +
+                            "WHERE ad_id = ?";
+            PreparedStatement statement = _connection.prepareStatement(sql);
+            statement.setInt(1, carAd.getClientId());
+            statement.setString(2, carAd.getName());
+            statement.setString(3, carAd.getMake());
+            statement.setString(4, carAd.getModel());
+            statement.setInt(5, carAd.getYear());
+            statement.setBigDecimal(6, carAd.getPrice());
+            statement.setInt(7, carAd.getMileage());
+            statement.setString(8, carAd.getDescription());
+            statement.setInt(9, carAd.getAdId());
+            if (statement.executeUpdate() > 0) {
+                sql = "UPDATE ad_photo SET photo = ? WHERE ad_id = ?";
+                statement = _connection.prepareStatement(sql);
+                statement.setBytes(1, carAd.getPhoto());
+                statement.setInt(2, carAd.getAdId());
+                if (statement.executeUpdate() > 0) return "success";
+            }
+        } catch (SQLException e) {
+            //throw new RuntimeException(e);
+        }
+        return "failed";
     }
 
     public CarAd getAdById(int id) {
@@ -210,7 +235,7 @@ public class AdRepository {
                 return (rowsDeleted > 0) ? "success" : "failed";
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            // throw new RuntimeException(e);
         }
         return "failed";
     }
