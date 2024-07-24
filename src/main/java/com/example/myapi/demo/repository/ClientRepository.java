@@ -14,11 +14,12 @@ public class ClientRepository {
     }
 
     public Client addClient(Client client) {
-        String sql = "INSERT INTO users (name, email, password) VALUES (?,?,?)";
+        String sql = "INSERT INTO users (name, email, password, phone) VALUES (?,?,?,?)";
         try (PreparedStatement statement = _connection.prepareStatement(sql)) {
             statement.setString(1, client.getName());
             statement.setString(2, client.getEmail());
             statement.setString(3, client.getPassword());
+            statement.setString(3, client.getPhone());
             return (statement.executeUpdate() > 0) ? client : null;
         } catch (SQLException e) {
             if (e.getErrorCode() == 1062) {
@@ -36,6 +37,17 @@ public class ClientRepository {
         statement.setString(2, client.getPassword());
         ResultSet resultSet = statement.executeQuery();
         return (resultSet.next()) ? resultSet.getInt("client_id"): -1;
+    }
+
+    public String getclientInfo(int id) throws SQLException {
+        String sql = "SELECT * FROM users WHERE client_id = ?";
+        PreparedStatement statement = _connection.prepareStatement(sql);
+        statement.setLong(1, id);
+        ResultSet resultSet = statement.executeQuery();
+        boolean hasResults = resultSet.next();
+        if(!hasResults) return "";
+        String result = resultSet.getString("phone");
+        return result;
     }
 
     public int updateClient(Client client) throws SQLException {

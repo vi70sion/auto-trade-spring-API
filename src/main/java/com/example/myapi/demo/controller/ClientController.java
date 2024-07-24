@@ -1,5 +1,6 @@
 package com.example.myapi.demo.controller;
 
+import com.example.myapi.demo.JwtDecoder;
 import com.example.myapi.demo.JwtGenerator;
 import com.example.myapi.demo.model.Client;
 import com.example.myapi.demo.service.ClientService;
@@ -32,6 +33,22 @@ public class ClientController {
                 new ResponseEntity<>("null", HttpStatus.BAD_REQUEST) :
                 new ResponseEntity<>(JwtGenerator.generateJwt(client.getEmail(), client.getPassword(), userId), HttpStatus.OK);
     }
+
+    @CrossOrigin
+    @GetMapping("/ad/client/info")
+    public ResponseEntity <String> getclientInfo(@RequestHeader("Authorization") String authorizationHeader) throws SQLException {
+        if(!clientService.badRequestCheck(authorizationHeader)) return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("bad request");
+        if(!clientService.unautorizedCheck(authorizationHeader)) return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body("unauthorized");
+        String userPhone = clientService.getclientInfo(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class));
+        return (userPhone.isEmpty()) ?
+                new ResponseEntity<>("null", HttpStatus.BAD_REQUEST) :
+                new ResponseEntity<>(userPhone, HttpStatus.OK);
+    }
+
 
     @CrossOrigin
     @PutMapping("/ad/client/update")

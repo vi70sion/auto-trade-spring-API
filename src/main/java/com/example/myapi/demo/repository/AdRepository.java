@@ -191,7 +191,7 @@ public class AdRepository {
         if(model.equalsIgnoreCase("empty")) {
             model = null;
         }
-        sql = "SELECT a.*, p.photo FROM car_ads a JOIN ad_photo p ON a.ad_id = p.ad_id " +
+        sql = "SELECT a.*, p.photo FROM car_ads a LEFT JOIN ad_photo p ON a.ad_id = p.ad_id " +
                 "WHERE (make = ? OR ? IS NULL) " +
                 "AND (model = ? OR ? IS NULL) " +
                 "AND price BETWEEN ? AND ? " +

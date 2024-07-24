@@ -107,6 +107,7 @@ public class AdController {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body(new ArrayList<>());
+        System.out.println();
         return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(adService.getAdsByClientId(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class)));
