@@ -10,16 +10,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class AdController {
     AdService adService = new AdService();
-    public AdController() throws SQLException {
+    public AdController() {
     }
-
 
     //Skelbimo pridėjimas: Endpointas naujo skelbimo sukūrimui,
     // kuris priima duomenis (pavadinimas, markė, modelis, metai, kaina, rida, aprašymas, nuotrauka).
@@ -28,27 +26,26 @@ public class AdController {
     @PostMapping("/ad/add")
     public ResponseEntity<String> addAd( @RequestPart("car") String carJson, @RequestParam("image") MultipartFile image,
                                          @RequestHeader("Authorization") String authorizationHeader ) {
-        if(!adService.badRequestCheck(authorizationHeader)) return ResponseEntity
+        if(!adService.isTokenCorrect(authorizationHeader)) return ResponseEntity
                                                                         .status(HttpStatus.BAD_REQUEST)
                                                                         .body("bad request");
-        if(!adService.unautorizedCheck(authorizationHeader)) return ResponseEntity
+        if(!adService.authorize(authorizationHeader)) return ResponseEntity
                                                                         .status(HttpStatus.UNAUTHORIZED)
                                                                         .body("unauthorized");
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             CarAd carAd = objectMapper.readValue(carJson, CarAd.class);
-            byte[] adPhoto = image.getBytes();   // convert the image to a byte array
+            byte[] adPhoto = image.getBytes();   // konvertuojame paveikslėlį į byte array
             carAd.setPhoto(adPhoto);
             carAd.setClientId(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class)); // user ID from JWT
-            if (adService.addAd(carAd).equals("success"))
-                return ResponseEntity
-                        .status(HttpStatus.OK)
-                        .body("success");
+            if (adService.addAd(carAd)) return ResponseEntity
+                                                .status(HttpStatus.OK)
+                                                .body("success");
         } catch (IOException e) {
-            // if error;
+            // klaida;
         }
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.NOT_ACCEPTABLE)
                 .body("failed");
     }
 
@@ -57,10 +54,10 @@ public class AdController {
     @PutMapping("/ad/update")
     public ResponseEntity<String> updateAd( @RequestPart("car") String carJson, @RequestParam("image") MultipartFile image,
                                          @RequestHeader("Authorization") String authorizationHeader ) {
-        if(!adService.badRequestCheck(authorizationHeader)) return ResponseEntity
+        if(!adService.isTokenCorrect(authorizationHeader)) return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body("bad request");
-        if(!adService.unautorizedCheck(authorizationHeader)) return ResponseEntity
+        if(!adService.authorize(authorizationHeader)) return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body("unauthorized");
         try {
@@ -69,15 +66,14 @@ public class AdController {
             byte[] adPhoto = image.getBytes();   // convert the image to a byte array
             carAd.setPhoto(adPhoto);
             carAd.setClientId(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class)); // user ID from JWT
-            if (adService.updateAd(carAd).equals("success"))
-                return ResponseEntity
-                        .status(HttpStatus.OK)
-                        .body("success");
+            if (adService.updateAd(carAd)) return ResponseEntity
+                                                    .status(HttpStatus.OK)
+                                                    .body("success");
         } catch (IOException e) {
             // if error;
         }
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.NOT_ACCEPTABLE)
                 .body("failed");
     }
 
@@ -95,15 +91,15 @@ public class AdController {
                                         .body(null);
     }
 
-    //Visi skelbimai pagal vartotojo ID (gauname iš JWT)
+    //Visi skelbimai pagal vartotojo ID (gaunamas iš JWT)
     @CrossOrigin
     @GetMapping("/ad/client")   // reikėtų pasitaisyti į /ad/client/ads
     public ResponseEntity<List<CarAd>> getAdsByClientId(@RequestHeader("Authorization") String authorizationHeader ) {
-        if(!adService.badRequestCheck(authorizationHeader))
+        if(!adService.isTokenCorrect(authorizationHeader))
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(new ArrayList<>());
-        if(!adService.unautorizedCheck(authorizationHeader))
+        if(!adService.authorize(authorizationHeader))
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body(new ArrayList<>());
@@ -114,10 +110,10 @@ public class AdController {
 
     }
 
-    //Visų gamintojų sąrašas
+    //Visų gamintojų sąrašas, gamintojai nesikartoja
     @CrossOrigin
     @GetMapping("/ad/makes")
-    public ResponseEntity<List<String>> allMakeList() throws SQLException {
+    public ResponseEntity<List<String>> allMakeList() {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(adService.allMakeList());
@@ -126,27 +122,27 @@ public class AdController {
     //Skelbimų sąrašas pagal gamintojus
     @CrossOrigin
     @GetMapping("/ad/models/{make}")
-    public ResponseEntity<List<String>> allModelsByMakeList(@PathVariable String make) throws SQLException {
+    public ResponseEntity<List<String>> allModelsByMakeList(@PathVariable String make) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(adService.allModelsByMakeList(make));
     }
 
-    //Skelbimų sąrašas: Endpointas, kuris grąžina visus skelbimus su galimybe filtruoti pagal markę, modelį, kainą
+    //Skelbimų sąrašas: grąžina visus skelbimus su galimybe filtruoti pagal gamintoją, markę, modelį, kainą
     @CrossOrigin
     @GetMapping("/ad/{make}/{model}/{price_from}/{price_to}")
     public ResponseEntity<List<CarAd>> AdsByMakeModelPriceList(@PathVariable String make, @PathVariable String model,
-                                 @PathVariable BigDecimal price_from, @PathVariable BigDecimal price_to ) throws SQLException {
+                                 @PathVariable BigDecimal price_from, @PathVariable BigDecimal price_to ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(adService.adsByMakeModelPriceList(make, model, price_from, price_to));
     }
 
-    //Skelbimo ištrynimas: Endpointas skelbimo ištrynimui pagal ID.
+    //Skelbimo ištrynimas: skelbimo ištrynimas pagal ID.
     @CrossOrigin
     @DeleteMapping("/ad/{id}")
-    public ResponseEntity<String> deleteAdById(@PathVariable int id) throws SQLException {
-        return (adService.deleteAdByAdId(id).equals("success")) ?
+    public ResponseEntity<String> deleteAdById(@PathVariable int id) {
+        return (adService.deleteAdByAdId(id)) ?
             ResponseEntity
                 .status(HttpStatus.OK)
                 .body("success") :
@@ -154,8 +150,5 @@ public class AdController {
                 .status(HttpStatus.NOT_ACCEPTABLE)
                 .body("failed");
     }
-
-
-
 
 }

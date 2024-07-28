@@ -5,30 +5,28 @@ import com.example.myapi.demo.model.Client;
 import com.example.myapi.demo.repository.ClientRepository;
 import io.jsonwebtoken.JwtException;
 
-import java.sql.SQLException;
-
 public class ClientService {
     ClientRepository clientRepository = new ClientRepository();
-    public ClientService() throws SQLException {
+    public ClientService() {
     }
 
     public Client addClient(Client client) {
         return clientRepository.addClient(client);
     }
 
-    public int checkClient(Client client) throws SQLException {
+    public int checkClient(Client client) {
         return clientRepository.checkClient(client);
     }
 
-    public String getclientInfo(int id) throws SQLException {
-        return clientRepository.getclientInfo(id);
+    public String getClientInfo(int id) {
+        return clientRepository.getClientInfo(id);
     }
 
-    public int updateClient(Client client) throws SQLException {
+    public boolean updateClient(Client client) {
         return clientRepository.updateClient(client);
     }
 
-    public boolean unautorizedCheck(String authorizationHeader){
+    public boolean authorize(String authorizationHeader){
         try {
             JwtDecoder.decodeJwt(authorizationHeader);
         } catch (JwtException e) {
@@ -36,7 +34,7 @@ public class ClientService {
         }
         return true;
     }
-    public boolean badRequestCheck(String authorizationHeader){
+    public boolean isTokenCorrect(String authorizationHeader){
         return (authorizationHeader.length() < 20 || authorizationHeader == null || authorizationHeader.isEmpty()) ? false : true;
     }
 

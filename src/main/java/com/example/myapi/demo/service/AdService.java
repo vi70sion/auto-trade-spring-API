@@ -4,17 +4,15 @@ import com.example.myapi.demo.JwtDecoder;
 import com.example.myapi.demo.model.CarAd;
 import com.example.myapi.demo.repository.AdRepository;
 import io.jsonwebtoken.JwtException;
-
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.List;
 
 public class AdService {
     AdRepository adRepository = new AdRepository();
-    public AdService() throws SQLException {
+    public AdService() {
     }
 
-    public boolean unautorizedCheck(String authorizationHeader){
+    public boolean authorize(String authorizationHeader){
         try {
             JwtDecoder.decodeJwt(authorizationHeader);
         } catch (JwtException e) {
@@ -22,15 +20,16 @@ public class AdService {
         }
         return true;
     }
-    public boolean badRequestCheck(String authorizationHeader){
+
+    public boolean isTokenCorrect(String authorizationHeader){
         return (authorizationHeader.length() < 20 || authorizationHeader == null || authorizationHeader.isEmpty()) ? false : true;
     }
 
-    public String updateAd(CarAd carAd) {
+    public boolean updateAd(CarAd carAd) {
         return adRepository.updateAd(carAd);
     }
 
-    public String addAd(CarAd carAd) {
+    public boolean addAd(CarAd carAd) {
         return adRepository.addAd(carAd);
     }
 
@@ -42,25 +41,24 @@ public class AdService {
         return adRepository.getAdsByClientId(id);
     }
 
-    public List<String> allMakeList() throws SQLException {
-        adRepository = new AdRepository();
+    public List<String> allMakeList() {
         return adRepository.allMakeList();
     }
 
-    public  List<String> allModelsByMakeList(String make) throws SQLException {
+    public  List<String> allModelsByMakeList(String make) {
         return adRepository.allModelsByMakeList(make);
     }
 
-    public List<CarAd> adsByMakeModelPriceList(String make, String model, BigDecimal price_from, BigDecimal price_to) throws SQLException {
+    public List<CarAd> adsByMakeModelPriceList(String make, String model, BigDecimal price_from, BigDecimal price_to) {
         return adRepository.adsByMakeModelPriceList(make, model, price_from, price_to);
     }
 
-    public String deleteAdByAdId(int id){
+    public boolean deleteAdByAdId(int id){
         return adRepository.deleteAdByAdId(id);
     }
 
 
-    public String addImage(byte[] adPhoto) throws SQLException {
+    public boolean addImage(byte[] adPhoto) {
         return adRepository.addImage(adPhoto);
     }
 }

@@ -10,22 +10,30 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import static com.example.myapi.demo.Constants.*;
 
 public class AdRepository {
     private List<CarAd> adsList;
     private List<String> adsStringList;
     private static Connection _connection;
-    public AdRepository() throws SQLException {
-        //_connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+    public AdRepository() {
     }
 
-    public static void sqlConnection() throws SQLException {
-        _connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+    public static void sqlConnection() {
+        try {
+            _connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        } catch (SQLException e) {
+            // connection issues
+            System.err.println("SQL Exception: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            // handle any other exceptions
+            System.err.println("Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    public String addAd(CarAd carAd) {
+    public boolean addAd(CarAd carAd) {
         try {
             sqlConnection();
             String sql = "INSERT INTO car_ads ( client_id, name, make, model, year, price, mileage, description) VALUES (?,?,?,?,?,?,?,?)";
@@ -49,16 +57,17 @@ public class AdRepository {
                     statement.setInt(1, id);
                     statement.setBytes(2, carAd.getPhoto());
                     rowsInserted = statement.executeUpdate();
-                    if (rowsInserted > 0) return "success";
+                    if (rowsInserted > 0) return true;
+                    // TODO nepavykus įterpti nuotraukos, pašalinti ir anksčiau įterptą skelbimą
                 }
             }
-           return "failed";
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            //throw new RuntimeException(e);
         }
+        return false;
     }
 
-    public String updateAd(CarAd carAd) {
+    public boolean updateAd(CarAd carAd) {
         try {
             sqlConnection();
             String sql = "UPDATE car_ads SET client_id = ?, name = ?, make = ?, model = ?, year = ?, price = ?, mileage = ?, description = ? " +
@@ -78,12 +87,12 @@ public class AdRepository {
                 statement = _connection.prepareStatement(sql);
                 statement.setBytes(1, carAd.getPhoto());
                 statement.setInt(2, carAd.getAdId());
-                if (statement.executeUpdate() > 0) return "success";
+                if (statement.executeUpdate() > 0) return true;
             }
         } catch (SQLException e) {
             //throw new RuntimeException(e);
         }
-        return "failed";
+        return false;
     }
 
     public CarAd getAdById(int id) {
@@ -141,7 +150,6 @@ public class AdRepository {
 
     }
 
-
     public List<String> allMakeList(){
         try {
             sqlConnection();
@@ -157,70 +165,71 @@ public class AdRepository {
         } catch (SQLException e) {
             // SQL išimtis
             return null;
-        } finally {
-            if (_connection != null) {
-                try {
-                    _connection.close();
-                } catch (SQLException e) {
-                    //
-                }
-            }
         }
     }
 
-    public List<String> allModelsByMakeList(String make) throws SQLException {
-        sqlConnection();
-        adsStringList = new ArrayList<>();
-        String sql = "SELECT DISTINCT model AS model FROM car_ads WHERE make = ? ORDER BY model ASC";
-        PreparedStatement statement = _connection.prepareStatement(sql);
-        statement.setString(1, make);
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) {
-            adsStringList.add(resultSet.getString("model"));
+    public List<String> allModelsByMakeList(String make) {
+        try {
+            sqlConnection();
+            adsStringList = new ArrayList<>();
+            String sql = "SELECT DISTINCT model AS model FROM car_ads WHERE make = ? ORDER BY model ASC";
+            PreparedStatement statement = _connection.prepareStatement(sql);
+            statement.setString(1, make);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                adsStringList.add(resultSet.getString("model"));
+            }
+        } catch (SQLException e) {
+            // sql klaida
         }
         return adsStringList;
     }
 
-    public List<CarAd> adsByMakeModelPriceList(String make, String model, BigDecimal price_from, BigDecimal price_to) throws SQLException {
-        sqlConnection();
-        adsList = new ArrayList<>();
-        String sql;
-        if(make.equalsIgnoreCase("empty")) {
-            make = null;
+    public List<CarAd> adsByMakeModelPriceList(String make, String model, BigDecimal price_from, BigDecimal price_to) {
+        try {
+            sqlConnection();
+            adsList = new ArrayList<>();
+            String sql;
+            if(make.equalsIgnoreCase("empty")) {
+                make = null;
+            }
+            if(model.equalsIgnoreCase("empty")) {
+                model = null;
+            }
+            sql = "SELECT a.*, p.photo FROM car_ads a LEFT JOIN ad_photo p ON a.ad_id = p.ad_id " +
+                    "WHERE (make = ? OR ? IS NULL) " +
+                    "AND (model = ? OR ? IS NULL) " +
+                    "AND price BETWEEN ? AND ? " +
+                    "ORDER BY price ASC;";
+            PreparedStatement statement = _connection.prepareStatement(sql);
+            statement.setString(1, make);
+            statement.setString(2, make);
+            statement.setString(3, model);
+            statement.setString(4, model);
+            statement.setBigDecimal(5, price_from);
+            statement.setBigDecimal(6, price_to);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                int adId = resultSet.getInt("ad_id");
+                int clientId = resultSet.getInt("client_id");
+                String adName = resultSet.getString("name");
+                String adMake = resultSet.getString("make");
+                String adModel = resultSet.getString("model");
+                int adYear = resultSet.getInt("year");
+                BigDecimal adPrice = resultSet.getBigDecimal("price");
+                int adMileage = resultSet.getInt("mileage");
+                String adDescr = resultSet.getString("description");
+                byte[] photo = resultSet.getBytes("photo");
+                adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, photo));
+            }
+            return adsList;
+        } catch (SQLException e) {
+            // sql klaida
         }
-        if(model.equalsIgnoreCase("empty")) {
-            model = null;
-        }
-        sql = "SELECT a.*, p.photo FROM car_ads a LEFT JOIN ad_photo p ON a.ad_id = p.ad_id " +
-                "WHERE (make = ? OR ? IS NULL) " +
-                "AND (model = ? OR ? IS NULL) " +
-                "AND price BETWEEN ? AND ? " +
-                "ORDER BY price ASC;";
-        PreparedStatement statement = _connection.prepareStatement(sql);
-        statement.setString(1, make);
-        statement.setString(2, make);
-        statement.setString(3, model);
-        statement.setString(4, model);
-        statement.setBigDecimal(5, price_from);
-        statement.setBigDecimal(6, price_to);
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) {
-            int adId = resultSet.getInt("ad_id");
-            int clientId = resultSet.getInt("client_id");
-            String adName = resultSet.getString("name");
-            String adMake = resultSet.getString("make");
-            String adModel = resultSet.getString("model");
-            int adYear = resultSet.getInt("year");
-            BigDecimal adPrice = resultSet.getBigDecimal("price");
-            int adMileage = resultSet.getInt("mileage");
-            String adDescr = resultSet.getString("description");
-            byte[] photo = resultSet.getBytes("photo");
-            adsList.add(new CarAd(adId, clientId, adName, adMake, adModel, adYear, adPrice, adMileage, adDescr, photo));
-        }
-        return adsList;
+        return new ArrayList<>();
     }
 
-    public String deleteAdByAdId(int id) {
+    public boolean deleteAdByAdId(int id) {
         try {
             sqlConnection();
             String deleteSql = "DELETE FROM ad_photo WHERE ad_id = ?";
@@ -232,18 +241,16 @@ public class AdRepository {
                 statement = _connection.prepareStatement(deleteSql);
                 statement.setInt(1, id);
                 rowsDeleted = statement.executeUpdate();
-                return (rowsDeleted > 0) ? "success" : "failed";
+                return (rowsDeleted > 0) ? true : false;
             }
         } catch (SQLException e) {
             // throw new RuntimeException(e);
         }
-        return "failed";
+        return false;
     }
 
 
-
-
-
+    // papildomos funkcijos- naudoju pradinių duomenų paruošimui
 
     public List<CarAd> allAdsList(String make, String model) throws SQLException {
         sqlConnection();
@@ -289,17 +296,31 @@ public class AdRepository {
         }
     }
 
-    public String addImage(byte[] adPhoto) throws SQLException {
-        sqlConnection();
-        String sql = "INSERT INTO ad_photo ( ad_id, photo ) VALUES (?, ?)";
-        PreparedStatement statement = _connection.prepareStatement(sql);
-        statement.setInt(1, 1);
-        statement.setBytes(2, adPhoto);
-        int rowsInserted = statement.executeUpdate();
-        return "ideta";
+    public boolean addImage(byte[] adPhoto) {
+        try {
+            sqlConnection();
+            String sql = "INSERT INTO ad_photo ( ad_id, photo ) VALUES (?, ?)";
+            PreparedStatement statement = _connection.prepareStatement(sql);
+            statement.setInt(1, 1);
+            statement.setBytes(2, adPhoto);
+            int rowsInserted = statement.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            // throw new RuntimeException(e);
+            return false;
+        }
     }
 
 
+//        finally {
+//            if (_connection != null) {
+//                try {
+//                    _connection.close();
+//                } catch (SQLException e) {
+//                    //
+//                }
+//            }
+//        }
 
 
 }

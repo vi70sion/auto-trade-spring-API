@@ -7,15 +7,12 @@ import com.example.myapi.demo.service.ClientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.sql.SQLException;
 
 @RestController
 public class ClientController {
     ClientService clientService = new ClientService();
-    public ClientController() throws SQLException {
+    public ClientController() {
     }
-
-
 
     @CrossOrigin
     @PostMapping("/ad/client/register")
@@ -27,7 +24,7 @@ public class ClientController {
 
     @CrossOrigin
     @PostMapping("/ad/client/login")
-    public ResponseEntity <String> checkClient(@RequestBody Client client) throws SQLException {
+    public ResponseEntity <String> checkClient(@RequestBody Client client) {
         int userId = clientService.checkClient(client);
         return (userId == -1) ?
                 new ResponseEntity<>("null", HttpStatus.BAD_REQUEST) :
@@ -36,25 +33,31 @@ public class ClientController {
 
     @CrossOrigin
     @GetMapping("/ad/client/info")
-    public ResponseEntity <String> getclientInfo(@RequestHeader("Authorization") String authorizationHeader) throws SQLException {
-        if(!clientService.badRequestCheck(authorizationHeader)) return ResponseEntity
+    public ResponseEntity <String> getClientInfo(@RequestHeader("Authorization") String authorizationHeader) {
+        if(!clientService.isTokenCorrect(authorizationHeader)) return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body("bad request");
-        if(!clientService.unautorizedCheck(authorizationHeader)) return ResponseEntity
+        if(!clientService.authorize(authorizationHeader)) return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body("unauthorized");
-        String userPhone = clientService.getclientInfo(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class));
+        String userPhone = clientService.getClientInfo(JwtDecoder.decodeJwt(authorizationHeader).get("UserId", Integer.class));
         return (userPhone.isEmpty()) ?
                 new ResponseEntity<>("null", HttpStatus.BAD_REQUEST) :
                 new ResponseEntity<>(userPhone, HttpStatus.OK);
     }
 
-
     @CrossOrigin
     @PutMapping("/ad/client/update")
-    public ResponseEntity <String> updateClient(@RequestBody Client client) throws SQLException {
-
-        return new ResponseEntity<>("null", HttpStatus.OK);
+    public ResponseEntity <String> updateClient(@RequestBody Client client, @RequestHeader("Authorization") String authorizationHeader) {
+        if(!clientService.isTokenCorrect(authorizationHeader)) return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("bad request");
+        if(!clientService.authorize(authorizationHeader)) return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body("unauthorized");
+        return (!clientService.updateClient(client)) ?
+                new ResponseEntity<>("failed", HttpStatus.BAD_REQUEST) :
+                new ResponseEntity<>("success", HttpStatus.OK);
     }
 
 }
